@@ -16,26 +16,36 @@
 #
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
-"""Base class for Telegram Objects."""
+"""This module contains an object that represents a Telegram Contact."""
 
-try:
-    import ujson as json
-except ImportError:
-    import json
-
-from abc import ABCMeta
+from telegram import TelegramObject
 
 
-class TelegramObject(object):
-    """Base class for most telegram objects."""
+class Contact(TelegramObject):
+    """This object represents a Telegram Contact.
 
-    __metaclass__ = ABCMeta
+    Attributes:
+        phone_number (str):
+        first_name (str):
+        last_name (str):
+        user_id (int):
 
-    def __str__(self):
-        return str(self.to_dict())
+    Args:
+        phone_number (str):
+        first_name (str):
+        last_name (Optional[str]):
+        user_id (Optional[int]):
+        **kwargs: Arbitrary keyword arguments.
 
-    def __getitem__(self, item):
-        return self.__dict__[item]
+    """
+
+    def __init__(self, phone_number, first_name, last_name='', user_id=0, **kwargs):
+        # Required
+        self.phone_number = str(phone_number)
+        self.first_name = first_name
+        # Optionals
+        self.last_name = last_name
+        self.user_id = int(user_id)
 
     @staticmethod
     def de_json(data, bot):
@@ -45,38 +55,9 @@ class TelegramObject(object):
             bot (telegram.Bot):
 
         Returns:
-            dict:
+            telegram.Contact:
         """
         if not data:
             return None
 
-        data = data.copy()
-
-        return data
-
-    def to_json(self):
-        """
-        Returns:
-            str:
-        """
-        return json.dumps(self.to_dict())
-
-    def to_dict(self):
-        """
-        Returns:
-            dict:
-        """
-        data = dict()
-
-        for key in iter(self.__dict__):
-            if key == 'bot':
-                continue
-
-            value = self.__dict__[key]
-            if value is not None:
-                if hasattr(value, 'to_dict'):
-                    data[key] = value.to_dict()
-                else:
-                    data[key] = value
-
-        return data
+        return Contact(**data)

@@ -16,26 +16,30 @@
 #
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
-"""Base class for Telegram Objects."""
+"""This module contains an object that represents a Telegram ForceReply."""
 
-try:
-    import ujson as json
-except ImportError:
-    import json
-
-from abc import ABCMeta
+from telegram import ReplyMarkup
 
 
-class TelegramObject(object):
-    """Base class for most telegram objects."""
+class ForceReply(ReplyMarkup):
+    """This object represents a Telegram ForceReply.
 
-    __metaclass__ = ABCMeta
+    Attributes:
+        force_reply (bool):
+        selective (bool):
 
-    def __str__(self):
-        return str(self.to_dict())
+    Args:
+        force_reply (bool):
+        selective (Optional[bool]):
+        **kwargs (dict): Arbitrary keyword arguments.
 
-    def __getitem__(self, item):
-        return self.__dict__[item]
+    """
+
+    def __init__(self, force_reply=True, selective=False, **kwargs):
+        # Required
+        self.force_reply = bool(force_reply)
+        # Optionals
+        self.selective = bool(selective)
 
     @staticmethod
     def de_json(data, bot):
@@ -45,38 +49,9 @@ class TelegramObject(object):
             bot (telegram.Bot):
 
         Returns:
-            dict:
+            telegram.ForceReply:
         """
         if not data:
             return None
 
-        data = data.copy()
-
-        return data
-
-    def to_json(self):
-        """
-        Returns:
-            str:
-        """
-        return json.dumps(self.to_dict())
-
-    def to_dict(self):
-        """
-        Returns:
-            dict:
-        """
-        data = dict()
-
-        for key in iter(self.__dict__):
-            if key == 'bot':
-                continue
-
-            value = self.__dict__[key]
-            if value is not None:
-                if hasattr(value, 'to_dict'):
-                    data[key] = value.to_dict()
-                else:
-                    data[key] = value
-
-        return data
+        return ForceReply(**data)

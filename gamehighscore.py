@@ -16,26 +16,25 @@
 #
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
-"""Base class for Telegram Objects."""
+"""This module contains an object that represents a Telegram GameHighScore."""
 
-try:
-    import ujson as json
-except ImportError:
-    import json
-
-from abc import ABCMeta
+from telegram import TelegramObject, User
 
 
-class TelegramObject(object):
-    """Base class for most telegram objects."""
+class GameHighScore(TelegramObject):
+    """This object represents a Telegram GameHighScore.
 
-    __metaclass__ = ABCMeta
+    Attributes:
+        position (int): Position in high score table for the game.
+        user (:class:`telegram.User`): User object.
+        score (int): Score.
 
-    def __str__(self):
-        return str(self.to_dict())
+    """
 
-    def __getitem__(self, item):
-        return self.__dict__[item]
+    def __init__(self, position, user, score):
+        self.position = position
+        self.user = user
+        self.score = score
 
     @staticmethod
     def de_json(data, bot):
@@ -45,38 +44,13 @@ class TelegramObject(object):
             bot (telegram.Bot):
 
         Returns:
-            dict:
+            telegram.Game:
         """
         if not data:
             return None
 
-        data = data.copy()
+        data = super(GameHighScore, GameHighScore).de_json(data, bot)
 
-        return data
+        data['user'] = User.de_json(data.get('user'), bot)
 
-    def to_json(self):
-        """
-        Returns:
-            str:
-        """
-        return json.dumps(self.to_dict())
-
-    def to_dict(self):
-        """
-        Returns:
-            dict:
-        """
-        data = dict()
-
-        for key in iter(self.__dict__):
-            if key == 'bot':
-                continue
-
-            value = self.__dict__[key]
-            if value is not None:
-                if hasattr(value, 'to_dict'):
-                    data[key] = value.to_dict()
-                else:
-                    data[key] = value
-
-        return data
+        return GameHighScore(**data)

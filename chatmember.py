@@ -16,26 +16,35 @@
 #
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
-"""Base class for Telegram Objects."""
+"""This module contains an object that represents a Telegram ChatMember."""
 
-try:
-    import ujson as json
-except ImportError:
-    import json
-
-from abc import ABCMeta
+from telegram import User, TelegramObject
 
 
-class TelegramObject(object):
-    """Base class for most telegram objects."""
+class ChatMember(TelegramObject):
+    """This object represents a Telegram ChatMember.
 
-    __metaclass__ = ABCMeta
+    Attributes:
+        user (:class:`telegram.User`): Information about the user.
+        status (str): The member's status in the chat. Can be 'creator', 'administrator', 'member',
+            'left' or 'kicked'.
 
-    def __str__(self):
-        return str(self.to_dict())
+    Args:
+        user (:class:`telegram.User`):
+        status (str):
+        **kwargs (dict): Arbitrary keyword arguments.
 
-    def __getitem__(self, item):
-        return self.__dict__[item]
+    """
+    CREATOR = 'creator'
+    ADMINISTRATOR = 'administrator'
+    MEMBER = 'member'
+    LEFT = 'left'
+    KICKED = 'kicked'
+
+    def __init__(self, user, status, **kwargs):
+        # Required
+        self.user = user
+        self.status = status
 
     @staticmethod
     def de_json(data, bot):
@@ -45,38 +54,13 @@ class TelegramObject(object):
             bot (telegram.Bot):
 
         Returns:
-            dict:
+            telegram.ChatMember:
         """
         if not data:
             return None
 
-        data = data.copy()
+        data = super(ChatMember, ChatMember).de_json(data, bot)
 
-        return data
+        data['user'] = User.de_json(data.get('user'), bot)
 
-    def to_json(self):
-        """
-        Returns:
-            str:
-        """
-        return json.dumps(self.to_dict())
-
-    def to_dict(self):
-        """
-        Returns:
-            dict:
-        """
-        data = dict()
-
-        for key in iter(self.__dict__):
-            if key == 'bot':
-                continue
-
-            value = self.__dict__[key]
-            if value is not None:
-                if hasattr(value, 'to_dict'):
-                    data[key] = value.to_dict()
-                else:
-                    data[key] = value
-
-        return data
+        return ChatMember(**data)

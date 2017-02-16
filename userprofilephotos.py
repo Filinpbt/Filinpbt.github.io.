@@ -16,26 +16,28 @@
 #
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
-"""Base class for Telegram Objects."""
+"""This module contains an object that represents a Telegram
+UserProfilePhotos."""
 
-try:
-    import ujson as json
-except ImportError:
-    import json
-
-from abc import ABCMeta
+from telegram import PhotoSize, TelegramObject
 
 
-class TelegramObject(object):
-    """Base class for most telegram objects."""
+class UserProfilePhotos(TelegramObject):
+    """This object represents a Telegram UserProfilePhotos.
 
-    __metaclass__ = ABCMeta
+    Attributes:
+        total_count (int):
+        photos (List[List[:class:`telegram.PhotoSize`]]):
 
-    def __str__(self):
-        return str(self.to_dict())
+    Args:
+        total_count (int):
+        photos (List[List[:class:`telegram.PhotoSize`]]):
+    """
 
-    def __getitem__(self, item):
-        return self.__dict__[item]
+    def __init__(self, total_count, photos, **kwargs):
+        # Required
+        self.total_count = int(total_count)
+        self.photos = photos
 
     @staticmethod
     def de_json(data, bot):
@@ -45,38 +47,26 @@ class TelegramObject(object):
             bot (telegram.Bot):
 
         Returns:
-            dict:
+            telegram.UserProfilePhotos:
         """
         if not data:
             return None
 
-        data = data.copy()
+        data = super(UserProfilePhotos, UserProfilePhotos).de_json(data, bot)
 
-        return data
+        data['photos'] = [PhotoSize.de_list(photo, bot) for photo in data['photos']]
 
-    def to_json(self):
-        """
-        Returns:
-            str:
-        """
-        return json.dumps(self.to_dict())
+        return UserProfilePhotos(**data)
 
     def to_dict(self):
         """
         Returns:
             dict:
         """
-        data = dict()
+        data = super(UserProfilePhotos, self).to_dict()
 
-        for key in iter(self.__dict__):
-            if key == 'bot':
-                continue
-
-            value = self.__dict__[key]
-            if value is not None:
-                if hasattr(value, 'to_dict'):
-                    data[key] = value.to_dict()
-                else:
-                    data[key] = value
+        data['photos'] = []
+        for photo in self.photos:
+            data['photos'].append([x.to_dict() for x in photo])
 
         return data

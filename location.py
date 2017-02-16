@@ -16,26 +16,27 @@
 #
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
-"""Base class for Telegram Objects."""
+"""This module contains an object that represents a Telegram Location."""
 
-try:
-    import ujson as json
-except ImportError:
-    import json
-
-from abc import ABCMeta
+from telegram import TelegramObject
 
 
-class TelegramObject(object):
-    """Base class for most telegram objects."""
+class Location(TelegramObject):
+    """This object represents a Telegram Location.
 
-    __metaclass__ = ABCMeta
+    Attributes:
+        longitude (float):
+        latitude (float):
 
-    def __str__(self):
-        return str(self.to_dict())
+    Args:
+        longitude (float):
+        latitude (float):
+    """
 
-    def __getitem__(self, item):
-        return self.__dict__[item]
+    def __init__(self, longitude, latitude, **kwargs):
+        # Required
+        self.longitude = float(longitude)
+        self.latitude = float(latitude)
 
     @staticmethod
     def de_json(data, bot):
@@ -45,38 +46,9 @@ class TelegramObject(object):
             bot (telegram.Bot):
 
         Returns:
-            dict:
+            telegram.Location:
         """
         if not data:
             return None
 
-        data = data.copy()
-
-        return data
-
-    def to_json(self):
-        """
-        Returns:
-            str:
-        """
-        return json.dumps(self.to_dict())
-
-    def to_dict(self):
-        """
-        Returns:
-            dict:
-        """
-        data = dict()
-
-        for key in iter(self.__dict__):
-            if key == 'bot':
-                continue
-
-            value = self.__dict__[key]
-            if value is not None:
-                if hasattr(value, 'to_dict'):
-                    data[key] = value.to_dict()
-                else:
-                    data[key] = value
-
-        return data
+        return Location(**data)
